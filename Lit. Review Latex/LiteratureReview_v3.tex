@@ -1,0 +1,458 @@
+% ============================================================
+%  Literature Review — Direction 1  (10-paper version)
+%  Multi-View Mammographic Breast Cancer Detection with
+%  Bilateral Asymmetry Fusion and Conformal Uncertainty
+%  Quantification
+%
+%  ACM 40960 · Project 8 — Disease Modelling
+%  University College Dublin
+%
+%  Citation style : APA 7th Edition (biblatex-apa)
+%  Font           : Times New Roman (fontspec / XeLaTeX)
+%  Spacing        : Double (setspace)
+%  Page size      : A4, 1-inch margins
+%
+%  Overleaf settings:
+%    Menu -> Compiler -> XeLaTeX
+%    (Biber runs automatically with biblatex under XeLaTeX)
+% ============================================================
+
+\documentclass[12pt, a4paper]{article}
+
+% -- Encoding & fonts (XeLaTeX) ------------------------------
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\usepackage{unicode-math}
+\setmathfont{XITS Math}
+
+% -- Page geometry -------------------------------------------
+\usepackage[
+  a4paper,
+  top    = 2.54cm,
+  bottom = 2.54cm,
+  left   = 2.54cm,
+  right  = 2.54cm
+]{geometry}
+
+% -- Line spacing --------------------------------------------
+\usepackage{setspace}
+\doublespacing
+
+% -- Running header / footer ---------------------------------
+\usepackage{fancyhdr}
+\setlength{\headheight}{14.5pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Literature Review --- Mammographic Breast Cancer Detection}}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% -- Section heading style (APA: bold, flush left) -----------
+\usepackage{titlesec}
+\titleformat{\section}{\normalfont\bfseries\large}{}{0em}{}
+\titleformat{\subsection}{\normalfont\bfseries}{}{0em}{}
+\titleformat{\subsubsection}{\normalfont\bfseries\itshape}{}{0em}{}
+\titlespacing*{\section}{0pt}{24pt}{6pt}
+\titlespacing*{\subsection}{0pt}{18pt}{4pt}
+
+% -- Bibliography (APA 7th via biblatex-apa) -----------------
+\usepackage[
+  backend   = biber,
+  style     = apa,
+  sortcites = true,
+  sorting   = nyt
+]{biblatex}
+\addbibresource{litreview_refs_v2.bib}
+
+% -- Hyperlinks ----------------------------------------------
+\usepackage[
+  colorlinks = true,
+  linkcolor  = black,
+  citecolor  = black,
+  urlcolor   = blue
+]{hyperref}
+\usepackage{url}
+
+% -- Misc ----------------------------------------------------
+\usepackage{microtype}
+\setlength{\parindent}{0.5in}
+\setlength{\parskip}{0pt}
+
+% -- Abstract environment ------------------------------------
+\renewenvironment{abstract}{%
+  \begin{center}\textbf{Abstract}\end{center}%
+  \begin{quotation}%
+}{\end{quotation}}
+
+% ============================================================
+\begin{document}
+
+% -- Title page ----------------------------------------------
+\begin{titlepage}
+  \centering
+  \vspace*{3cm}
+
+  {\LARGE\bfseries Literature Review\par}
+  \vspace{1.2cm}
+
+  {\large\bfseries
+    Multi-View Mammographic Breast Cancer Detection with\\
+    Bilateral Asymmetry Fusion and Conformal\\
+    Uncertainty Quantification\par}
+  \vspace{1.8cm}
+
+  {\normalsize\itshape ACM 40960 \textperiodcentered\ Project 8 --- Disease Modelling\par}
+  \vspace{0.6cm}
+
+  {\normalsize University College Dublin\\
+  School of Mathematics and Statistics\par}
+  \vspace{0.6cm}
+
+  {\normalsize Supervised by Dr.\ Sarp Ak{\c{c}}ay\par}
+  \vspace{0.6cm}
+
+  {\normalsize June 2026\par}
+\end{titlepage}
+
+% -- Abstract ------------------------------------------------
+\begin{abstract}
+This literature review surveys the research foundations underpinning a novel
+deep learning system for breast cancer detection from digital mammography.
+The proposed system makes two primary methodological contributions: multi-view
+bilateral asymmetry fusion, implemented via a Siamese encoder with gated
+cross-view attention and an explicit asymmetry module
+$\delta = |f_L - f_R|$; and conformal uncertainty quantification, providing
+distribution-free finite-sample coverage guarantees via Regularised Adaptive
+Prediction Sets (RAPS).
+The review covers ten primary sources organised across four thematic areas:
+the backbone architecture and fine-tuning paradigm that underpin the feature
+extractor; the mammography AI literature that establishes clinical credibility
+and defines the experimental baselines; the multi-view and bilateral asymmetry
+methods that constitute the immediate prior work for the first contribution;
+and the conformal prediction literature that grounds the second.
+Each paper is assessed for its direct methodological relevance to the proposed
+system, with explicit attention to what the proposed work extends, what it
+must differentiate itself from, and what it implements directly.
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Introduction}
+
+Breast cancer is the most commonly diagnosed cancer among women worldwide.
+Mammographic screening programmes reduce mortality through early detection, yet
+sensitivity is constrained by reader variability, radiologist fatigue, and the
+difficulty of identifying subtle lesions in radiographically dense tissue.
+Deep convolutional neural networks have demonstrated radiologist-level
+diagnostic performance on large mammography datasets
+\parencite{McKinney2020, Wu2019}, catalysing substantial clinical and research
+interest in automated screening.
+
+The proposed system targets two underaddressed limitations in the current
+literature. First, most high-performing systems process views independently or
+fuse them implicitly, discarding the well-established clinical value of
+bilateral asymmetry --- the systematic structural difference between left and
+right breasts that is one of the most reliable radiological indicators of
+malignancy. Second, predictive uncertainty in deployed mammography AI is
+routinely characterised by heuristic methods lacking formal guarantees, a
+critical shortcoming in a clinical decision-support context where the cost
+of overconfident errors is asymmetric and severe.
+
+The proposed system addresses these limitations through a Siamese bilateral
+encoder with gated cross-view attention, an explicit asymmetry feature
+$\delta = |f_L - f_R|$, and split conformal prediction via RAPS
+\parencite{Romano2020}, providing marginal coverage guarantees at any
+user-specified miscoverage level $\alpha$.
+This review surveys the ten primary sources that establish the intellectual
+context, methodological precedents, and comparative baselines for the system.
+The review is structured in four thematic sections, each corresponding to a
+load-bearing component of the proposed architecture.
+All citations follow APA 7th Edition, as standard for quantitative and
+computational research submissions at University College Dublin.
+
+% ============================================================
+\section{Backbone Architecture and the Fine-Tuning Paradigm}
+
+\subsection{DenseNet: The Architectural Foundation}
+
+The proposed system employs DenseNet-121 as its primary feature extraction
+backbone.
+\textcite{Huang2017} introduced dense connectivity, in which each layer
+receives the concatenated feature maps of \textit{all} preceding layers as
+input, rather than only the immediately preceding layer as in residual
+networks.
+This connectivity pattern promotes feature reuse, substantially reduces
+parameter count relative to comparably deep networks, and produces implicit
+deep supervision throughout the network by shortening the gradient path from
+any layer to the loss.
+DenseNet-121 --- the 121-layer configuration --- achieves strong performance
+on ImageNet at a parameter budget well-suited to fine-tuning on datasets of
+limited size, making it the natural choice for CBIS-DDSM
+\parencite{Lee2017}, which contains approximately 2,620 cases.
+Understanding the dense connectivity structure is a prerequisite for
+reasoning about feature map dimensions and skip connections in the bilateral
+fusion module, where the concatenation of encoder outputs from both branches
+is combined with the asymmetry feature $\delta$.
+
+\subsection{CheXNet and the Medical Fine-Tuning Template}
+
+\textcite{Rajpurkar2017} fine-tuned DenseNet-121 on the ChestX-ray14 dataset
+of 112,120 frontal chest radiographs, achieving F1 scores exceeding the
+mean radiologist performance on pneumonia detection.
+Their protocol --- ImageNet-pretrained initialisation, aggressive data
+augmentation (random horizontal flipping, random crop), and Adam
+optimisation with a cyclically decayed learning rate --- established the
+canonical transfer learning template for medical imaging with DenseNet.
+This protocol is adopted directly in the proposed system's training pipeline.
+CheXNet also introduced the practice of reporting performance at the
+per-finding level with radiologist comparison, a reporting standard that
+the proposed system's evaluation follows for its CBIS-DDSM results.
+
+% ============================================================
+\section{Mammography AI: Clinical Baselines}
+
+\subsection{DeepMind International Evaluation}
+
+\textcite{McKinney2020} evaluated a proprietary Google DeepMind mammography
+system on 29,426 retrospective cases from the United Kingdom and United
+States, supplemented by a prospective UK cohort.
+The system reduced false positive rates by 5.7\% (UK) and 1.2\% (US) and
+false negative rates by 9.4\% (UK) and 2.7\% (US) relative to a single
+radiologist, outperforming all six radiologists who participated in an
+independent reader study.
+This paper establishes the performance expectations and clinical framing
+for the field.
+It is the reference every examining supervisor will situate the proposed
+work against, and its results define the upper bound of clinical credibility
+against which new systems are benchmarked.
+The proposed system does not attempt to replicate the scale of this study
+--- it trains and evaluates on publicly available data (CBIS-DDSM) --- but
+positions its contributions relative to the architectural and methodological
+directions this work opened.
+
+\subsection{NYU Deep Learning for Breast Cancer Screening}
+
+\textcite{Wu2019} presented the most methodologically detailed academic
+mammography study to date, training on 229,426 screening examinations from
+NYU Langone Health.
+Their model achieved AUROC 0.876 on an independent test set and produced
+statistically significant improvements in radiologist sensitivity when used
+as a second reader.
+Critically for the proposed system, \textcite{Wu2019} process all four
+standard views --- left and right craniocaudal (CC) and mediolateral
+oblique (MLO) --- and combine view-level predictions through learned
+attention weights.
+This is the direct architectural template for the proposed system.
+The NYU open-source codebase provides the reference implementation for the
+single-view DenseNet-121 baseline against which the bilateral asymmetry
+fusion component is evaluated.
+The proposed system extends Wu et al.\ by replacing implicit view
+combination with a Siamese bilateral encoder, a gated cross-view attention
+module, and an explicit asymmetry feature, and by adding conformal
+prediction sets at inference time.
+
+\subsection{CBIS-DDSM: The Primary Dataset}
+
+\textcite{Lee2017} describe the Curated Breast Imaging Subset of the Digital
+Database for Screening Mammography (CBIS-DDSM), the primary dataset on which
+the proposed system is trained and evaluated.
+CBIS-DDSM contains 2,620 digitised film-screen mammography cases with expert
+annotations for mass and calcification findings, BI-RADS assessment
+categories, pathology labels (benign/malignant), bounding boxes, and
+pixel-level segmentation masks for a subset of cases.
+Reading this paper is a prerequisite before writing any dataloader code.
+The dataset's structure has several non-obvious properties that affect
+implementation: cases are stored as DICOM files in a non-standard directory
+layout; image-level and case-level CSV files must be joined on
+\texttt{patient\_id} and laterality to reconstruct bilateral pairs; and the
+train/test split is provided at the case level rather than the image level,
+requiring careful handling to avoid data leakage between left-right pairs.
+The proposed system's bilateral fusion module requires precisely this
+patient-level grouping, making the data structure described by
+\textcite{Lee2017} architecturally relevant, not merely bibliographically
+obligatory.
+
+% ============================================================
+\section{Multi-View and Bilateral Asymmetry Fusion}
+
+\subsection{Dual-View Deep Learning for Mammography}
+
+\textcite{Wu2020} extended the single-view NYU architecture into an explicit
+dual-view framework, processing CC and MLO views of the same breast jointly
+through a shared encoder with a cross-view attention mechanism.
+Their system achieved statistically significant improvements over the
+single-view baseline on the NYU proprietary dataset, demonstrating that
+explicit architectural modelling of the CC/MLO relationship carries
+diagnostic information beyond what is captured by independent view processing
+with late fusion.
+This paper is the most direct architectural prior work for the proposed system
+and must be read with particular care.
+The key dimension along which the proposed system advances beyond
+\textcite{Wu2020} is the \textit{bilateral} axis: their model fuses
+views of the same breast (CC and MLO), whereas the proposed system
+additionally fuses across the left and right breast, treating the
+contralateral pair as a source of discriminative asymmetry signal.
+This distinction is the primary claim of novelty and must be stated
+precisely in every comparison with this paper.
+
+\subsection{Multi-View Bilateral Asymmetry Detection}
+
+\textcite{Nguyen2019} proposed the most direct computational precursor to the
+proposed system's bilateral asymmetry module.
+They trained a shared-weight CNN encoder on bilateral mammogram pairs and
+computed an explicit asymmetry feature as the absolute difference between
+left and right breast representations, $\delta = |f_L - f_R|$, which was
+then passed to a classifier jointly with the individual view features.
+Their architecture demonstrated that this asymmetry signal improved
+classification AUROC by a statistically significant margin over a unilateral
+baseline on CBIS-DDSM.
+The proposed system directly adopts the $\delta = |f_L - f_R|$
+formulation and the shared-weight Siamese encoder structure, extending it
+with a gated cross-view attention mechanism that modulates the contribution
+of each view representation based on the asymmetry magnitude, and with
+the conformal prediction wrapper at inference.
+
+\subsection{Bilateral Asymmetry Counterfactual Network}
+
+\textcite{Yang2021} proposed a bilateral asymmetry guided counterfactual
+generating network, in which the asymmetry signal between left and right
+breast encodings is used to synthesise a plausible normal counterpart for
+an abnormal breast.
+Classification is then performed contrastively between the real and
+counterfactual representations.
+Their system achieves strong performance and demonstrates the diagnostic power
+of the bilateral asymmetry signal when exploited as a generative prior.
+This paper is included not as a precursor to extend but as a comparison point
+to differentiate from.
+The proposed system and \textcite{Yang2021} share the core insight that
+bilateral asymmetry is a powerful discriminative signal, but differ
+fundamentally in mechanism: the proposed system incorporates asymmetry
+as a direct discriminative feature fused through attention, preserving
+interpretability via standard gradient-based visualisation, whereas
+\textcite{Yang2021} use asymmetry as a generative prior, introducing
+substantial additional architectural complexity and a generative training
+objective.
+Being precise about this distinction is necessary to establish the
+novelty of the proposed contribution.
+
+% ============================================================
+\section{Conformal Prediction and Uncertainty Quantification}
+
+\subsection{Distribution-Free Uncertainty Quantification}
+
+\textcite{Angelopoulos2021} provide the definitive tutorial introduction to
+conformal prediction and distribution-free uncertainty quantification,
+covering the theoretical foundations, split and full conformal variants,
+and the construction of prediction sets with finite-sample coverage
+guarantees.
+This paper grounds the proposed system's second primary contribution.
+Split conformal prediction --- the variant implemented --- partitions
+available data into training, calibration, and test sets.
+Nonconformity scores are computed on the calibration set, and the
+$(1{-}\alpha)(1{+}1/n)$-th quantile of these scores serves as the
+threshold for prediction set construction at test time.
+The resulting sets satisfy a marginal coverage guarantee: for any
+user-specified miscoverage level $\alpha \in (0,1)$, the prediction
+set contains the true class with probability at least $1{-}\alpha$,
+regardless of the underlying data distribution.
+This distribution-free property is the defining advantage of conformal
+prediction over calibration approaches such as temperature scaling,
+which improve reliability on average but provide no per-instance
+statistical guarantee.
+In a clinical screening context --- where the consequences of
+overconfident false negatives are severe and asymmetric ---
+the formal guarantee is not merely a theoretical nicety but a
+prerequisite for principled deployment.
+
+\subsection{Regularised Adaptive Prediction Sets (RAPS)}
+
+\textcite{Romano2020} introduced Regularised Adaptive Prediction Sets (RAPS),
+extending the basic split conformal framework with a regularisation term that
+penalises prediction sets containing many low-probability classes.
+Standard split conformal prediction constructs sets of fixed threshold,
+which can be arbitrarily large when the model is uncertain.
+RAPS addresses this by adding a size-regularisation penalty
+$\lambda \cdot \max(0, |\mathcal{C}| - k_{\mathrm{reg}})$ to the
+nonconformity score, where $|\mathcal{C}|$ is the current set size and
+$k_{\mathrm{reg}}$ is the target size.
+The penalty encourages tight prediction sets while preserving the
+marginal coverage guarantee.
+RAPS is the specific conformal variant implemented in the proposed system,
+and its hyperparameters ($\lambda$, $k_{\mathrm{reg}}$) are tuned on the
+CBIS-DDSM calibration split.
+In the clinical context, the practical consequence is that the system
+returns tight prediction sets for confident predictions (typically a
+singleton \{benign\} or \{malignant\}) while appropriately expanding
+to a two-element set \{benign, malignant\} for ambiguous cases, directly
+encoding the clinical recommendation to recall for further assessment.
+
+% ============================================================
+\section{Synthesis}
+
+The ten papers reviewed above collectively define the proposed system's
+intellectual heritage across four dimensions.
+
+The backbone and fine-tuning papers \parencite{Huang2017, Rajpurkar2017}
+establish that DenseNet-121 with ImageNet pre-training is the appropriate
+feature extractor for a dataset of CBIS-DDSM's size, and that the
+CheXNet training protocol is the correct initialisation strategy.
+
+The clinical baseline papers \parencite{McKinney2020, Wu2019, Lee2017}
+define the field's performance expectations, provide the direct
+architectural template the proposed system extends, and specify the
+dataset whose structure determines the bilateral pairing logic.
+
+The bilateral asymmetry papers \parencite{Wu2020, Nguyen2019, Yang2021}
+establish the immediate prior work.
+\textcite{Nguyen2019} is the system directly extended;
+\textcite{Wu2020} is the closest published architecture;
+\textcite{Yang2021} is the paper from which the proposed system
+must differentiate itself most carefully.
+
+The conformal prediction papers \parencite{Angelopoulos2021, Romano2020}
+provide the theoretical foundation and specific implementation of the
+second primary contribution.
+Together they establish both why conformal prediction is the appropriate
+uncertainty quantification framework in a clinical context (formal
+coverage guarantees, distribution-free validity) and exactly which
+variant the proposed system implements and why (RAPS for efficient,
+size-regularised prediction sets).
+
+No existing system combines bilateral asymmetry fusion, explicit
+$\delta$-feature modulation via gated cross-view attention, and
+distribution-free conformal uncertainty quantification within a unified
+architecture trained on publicly available mammography data.
+This combination constitutes the novel contribution the proposed work
+makes to the field.
+
+% ============================================================
+\section{Conclusion}
+
+This review has surveyed ten primary sources across four thematic areas
+directly relevant to the proposed system.
+The backbone and transfer learning literature establishes the feature
+extractor and training protocol.
+The mammography AI literature defines clinical baselines, architectural
+templates, and the primary dataset.
+The bilateral asymmetry literature provides the immediate precursors that
+the proposed system extends and must differentiate from.
+The conformal prediction literature grounds the uncertainty quantification
+contribution in theory and specifies the implemented method.
+
+The scope of this review is intentionally narrow, covering only those
+works that are load-bearing for the system's two primary contributions.
+Each paper is cited because it directly informs an architectural decision,
+provides a baseline the system must surpass, or must be engaged with
+explicitly to establish novelty.
+This focus reflects the project's position as a research contribution
+grounded in two clearly defined methodological innovations, each with
+a well-bounded prior literature.
+
+% ============================================================
+\newpage
+\printbibliography[title={References}]
+
+\end{document}
