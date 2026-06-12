@@ -13,7 +13,7 @@ Nguyen 2019 — Bilateral asymmetry (direct precursor, δ = |f_L − f_R|)
 Yang 2021 — Counterfactual bilateral (differentiation point)
 Angelopoulos 2021 — Conformal prediction tutorial (coverage guarantee)
 Romano 2020 — RAPS (size-regularised prediction sets, implemented variant)
-
+ 
 Written in a thematic, concept-driven style modelled on an Irish PhD related-work chapter:
 papers are woven in subtly as numbered citations supporting claims, rather than discussed
 one by one. Sections build an argument toward the gap the project fills — the union of
