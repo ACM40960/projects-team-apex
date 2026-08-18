@@ -1,27 +1,23 @@
-Project: Mammographic Breast Cancer Detection with Bilateral Asymmetry Fusion and Conformal Uncertainty Quantification
-Module: ACM 40960 · Project 8 — Disease Modelling · University College Dublin
+**Conformal Uncertainty Quantification for Mammographic Breast Cancer Classification**
 
-Literature Review [Current Milestone]
-Related work is selected strictly against the project's two core considerations — bilateral asymmetry fusion and conformal uncertainty quantification — as well as the backbone, clinical baselines, and datasets they depend on.
+Course: ACM 40960: Project 8 (Disease Modelling) 
+Programme: MSc Data & Computational Science, University College Dublin, 2026–27 
+Supervisors: Dr. Sarp Akçay
+Authors: Darshan S Gowda, Rakshith K B
 
-Huang 2017 — DenseNet (backbone architecture)
-McKinney 2020 — DeepMind/Nature (clinical performance baseline)
-Wu 2019 — NYU (reproducible multi-view template)
-Lee 2017 — CBIS-DDSM (primary dataset)
-Wu 2020 — Dual-View (closest architectural antecedent)
-Nguyen 2019 — Bilateral asymmetry (direct precursor, δ = |f_L − f_R|)
-Yang 2021 — Counterfactual bilateral (differentiation point)
-Angelopoulos 2021 — Conformal prediction tutorial (coverage guarantee)
-Romano 2020 — RAPS (size-regularised prediction sets, implemented variant)
- 
-Written in a thematic, concept-driven style modelled on an Irish PhD related-work chapter:
-papers are woven in subtly as numbered citations supporting claims, rather than discussed
-one by one. Sections build an argument toward the gap the project fills — the union of
-bilateral asymmetry fusion with conformal uncertainty, which the literature motivates but
-nowhere assembles.
+**Overview**
 
+Deep learning classifiers for mammographic malignancy detection output a softmax probability, but that probability is not a trustworthy confidence score on its own — this project's own base classifier has an Expected Calibration Error of ~0.205, meaning "80% confident" is not actually right 80% of the time. This project wraps a DenseNet-121 classifier, fine-tuned on CBIS-DDSM (benign vs. malignant), with split conformal prediction: a post-hoc, model-agnostic calibration layer that produces prediction sets with a distribution-free, finite-sample coverage guarantee — valid regardless of whether the underlying model is well-calibrated.
 
+Three nonconformity scores are implemented and compared (LAC, APS, RAPS), all achieving the target ~95% marginal coverage. The project's core clinical finding is that marginal coverage can mask class-level failure: pooled coverage sits at target while malignant-specific coverage undershoots it (~0.893). Mondrian (class-conditional) calibration — a separate threshold per class instead of one global threshold — restores per-class coverage to ~0.960, which is the headline contribution.
 
+**Method** [Summarized]
 
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/-bKyY6qM)
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=23928266&assignment_repo_type=AssignmentRepo)
+1) Data & splits — CBIS-DDSM JPEGs (via Kaggle), labels binarized from pathology. Splits are done at the patient level (not per-image), so no patient appears in more than one of train/val/calibration/test — this is what keeps the conformal exchangeability assumption honest.
+2) Model — DenseNet-121, ImageNet-pretrained, fine-tuned end-to-end with a 2-class head. The conformal layer is model-agnostic — it only ever sees softmax output, not the architecture.
+3) Conformal calibration — LAC (1 - p(true)), APS (adaptive, cumulative sorted mass), and RAPS (APS + a rank regularization penalty) are all calibrated using the standard finite-sample-corrected quantile ceil((n+1)(1-α))/n, which is what makes the coverage guarantee exact rather than approximate. Evaluated over 100 resampled calibration/test splits to report a coverage distribution, not a single point estimate.
+4) Mondrian extension — the same LAC threshold logic, calibrated separately per class, to fix the marginal-coverage blind spot on malignant cases described above.
+
+**Reproducing the results**
+
+See Code/README.md for exact run instructions (Kaggle, GPU T4 ×2, dataset mount path, smoke test vs. full run). Outputs land in Outputs Received/; running Code/test_coverage.py and Code/test_notebook_matches_conformal.py verifies the conformal implementation independently of any specific run.
