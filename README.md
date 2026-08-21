@@ -33,9 +33,9 @@ Three nonconformity scores are implemented and compared:
 
 | Method | What it does |
 |:---|:---|
-| **LAC** | Least Ambiguous set-valued Classifier — simplest, usually smallest sets |
-| **APS** | Adaptive Prediction Sets — set size adapts to per-example ambiguity |
-| **RAPS** | Regularized APS — penalizes unnecessary tail-class inclusion |
+| **LAC** | Least Ambiguous set-valued Classifier: simplest, usually smallest sets/binary |
+| **APS** | Adaptive Prediction Sets: set size adapts to per-example ambiguity |
+| **RAPS** | Regularized APS: penalizes unnecessary tail-class inclusion |
 
 All three hit the target ~95% marginal coverage. That's the baseline result, not the headline one.
 
