@@ -3,10 +3,9 @@
 # Code
 
 **Everything needed to reproduce the model, the conformal calibration, and the tests that verify both. **
+Four files, no hidden dependencies beyond what's imported at the top of each.
 
 </div>
-
-Four files, no hidden dependencies beyond what's imported at the top of each.
 
 ---
 
