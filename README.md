@@ -69,8 +69,8 @@ Pooled ("marginal") coverage looked fine at target, but broken down by class, **
 | LAC / APS / RAPS marginal coverage | all **~0.95** (target hit) |
 | LAC average set size | **~1.694** |
 | LAC singleton rate | **~30.6%** |
-| Marginal malignant coverage | **~0.893** ⚠️ under target |
-| Mondrian malignant coverage | **~0.960** ✅ target restored |
+| Marginal malignant coverage | **~0.893** under target |
+| Mondrian malignant coverage | **~0.960** target restored |
 
 Full detail and every supporting figure live in [`Outputs Received/`](Outputs%20Received/).
 
