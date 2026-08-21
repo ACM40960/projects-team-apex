@@ -1,1 +1,33 @@
+<div align="center">
 
+# Poster
+
+**Working versions of the A0 conference poster, in progress toward the final submission.**
+
+</div>
+
+This folder will contain multiple drafts during iteration:
+---
+
+## Versions
+
+| File | Date | Status | Notes |
+|:---|:---:|:---:|:---|
+| *`poster_v1.pdf`* | | Superseded | *what changed / what was wrong with it* |
+| *`poster_v2.pdf`* | | Superseded | |
+| *`poster_final.pdf`* | | **Current — submit this one** | |
+---
+
+## Format Requirements
+
+- [ ] **A0, portrait orientation**
+- [ ] All placeholder/synthetic numbers replaced with real results from [`Outputs Received/results.json`](../Outputs%20Received/results.json)
+- [ ] Author names correct and complete
+- [ ] QR code present and scanning to the intended target
+- [ ] Physical A0 print in hand at least one day before the poster session
+
+<div align="center">
+
+*Reference: [Kaggle Notebook](https://www.kaggle.com/code/wandererray9/conformal-mammography-classification) · [CBIS-DDSM Dataset](https://www.kaggle.com/datasets/awsaf49/cbis-ddsm-breast-cancer-image-dataset)*
+
+</div>
