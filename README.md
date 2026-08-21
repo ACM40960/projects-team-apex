@@ -1,12 +1,12 @@
 <div align="center">
 
 # Conformal Uncertainty Quantification for Mammographic Malignancy Classification
+---
 
 **Split conformal prediction wrapped around a DenseNet-121 mammography classifier: turning raw softmax confidence into a provable, distribution-free coverage guarantee.**
 
 </div>
 
----
 
 ## Table of Contents
 
@@ -19,9 +19,9 @@
 - [Assessment Context](#assessment-context)
 - [Team](#team)
 
----
 
 ## Overview
+---
 
 Deep learning classifiers for mammographic malignancy detection output a softmax probability, but that number is not a trustworthy confidence score on its own. This project's own base classifier has an **Expected Calibration Error of ~0.205**, meaning "80% confident" is not actually right 80% of the time.
 
@@ -39,9 +39,8 @@ Three nonconformity scores are implemented and compared:
 
 All three hit the target ~95% marginal coverage. That's the baseline result, not the headline one.
 
----
-
 ## The Core Finding
+---
 
 > **Marginal coverage can hide a clinically important failure.**
 
@@ -61,6 +60,7 @@ Pooled ("marginal") coverage looked fine at target, but broken down by class, **
 ---
 
 ## Headline Results
+---
 
 | Metric | Value |
 |:---|:---:|
@@ -74,9 +74,8 @@ Pooled ("marginal") coverage looked fine at target, but broken down by class, **
 
 Full detail and every supporting figure live in [`Outputs Received/`](Outputs%20Received/).
 
----
-
 ## Repository Structure
+---
 
 ```
 .
@@ -89,19 +88,17 @@ Full detail and every supporting figure live in [`Outputs Received/`](Outputs%20
 ```
 
 ## Method
-
 ---
 
 <table>
-<tr><td width="36px" align="center"><b>1</b></td><td><b>Data & splits</b> — CBIS-DDSM JPEGs (via Kaggle), labels binarized from pathology. Splits are done at the <b>patient level</b>, not per-image, so no patient appears in more than one of train/val/calibration/test — this is what keeps the conformal exchangeability assumption honest.</td></tr>
-<tr><td align="center"><b>2</b></td><td><b>Model</b> — DenseNet-121, ImageNet-pretrained, fine-tuned end to end with a 2-class head. The conformal layer never sees the architecture — only the softmax output.</td></tr>
-<tr><td align="center"><b>3</b></td><td><b>Conformal calibration</b> — LAC / APS / RAPS, all calibrated using the finite-sample-corrected quantile <code>⌈(n+1)(1−α)⌉ / n</code>, which is what makes the coverage guarantee <i>exact</i> rather than approximate. Evaluated over 100 resampled calibration/test splits to report a coverage <i>distribution</i>, not a point estimate.</td></tr>
-<tr><td align="center"><b>4</b></td><td><b>Mondrian extension</b> — the same LAC logic, calibrated separately per class, to fix the marginal-coverage blind spot on malignant cases described above.</td></tr>
+<tr><td width="36px" align="center"><b>1</b></td><td><b>Data & splits</b>: CBIS-DDSM JPEGs (via Kaggle), labels binarized from pathology. Splits are done at the <b>patient level</b>, not per-image, so no patient appears in more than one of train/val/calibration/test: this is what keeps the conformal exchangeability assumption honest.</td></tr>
+<tr><td align="center"><b>2</b></td><td><b>Model</b>: DenseNet-121, ImageNet-pretrained, finely tuned end-to-end with a 2-class head. The conformal layer never sees the architecture, only the softmax output.</td></tr>
+<tr><td align="center"><b>3</b></td><td><b>Conformal calibration</b>: LAC / APS / RAPS, all calibrated using the finite-sample-corrected quantile <code>⌈(n+1)(1−α)⌉ / n</code>, which is what makes the coverage guarantee <i>exact</i> rather than approximate. Evaluated over 100 resampled calibration/test splits to report a coverage <i>distribution</i>, not a point estimate.</td></tr>
+<tr><td align="center"><b>4</b></td><td><b>Mondrian extension</b>: the same LAC logic, calibrated separately per class, to fix the marginal-coverage blind spot on malignant cases described above.</td></tr>
 </table>
 
----
-
 ## Reproducing the Results
+---
 
 See [`Code/README.md`](Code/README.md) for exact run instructions: Kaggle, GPU T4×2, dataset mount path, smoke test vs. full run.
 
@@ -112,7 +109,6 @@ python Code/test_notebook_matches_conformal.py
 ```
 
 ## Team
-
 ---
 
 **Programme:** MSc Data & Computational Science, University College Dublin, 2026–27
@@ -124,8 +120,5 @@ python Code/test_notebook_matches_conformal.py
 **Authors:** Darshan S Gowda [25219951], Rakshith K B [25235067]
 
 <div align="center">
-
----
-
 
 </div>
